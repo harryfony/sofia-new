@@ -6,25 +6,17 @@ BAIHU_PORT="${BH_SERVER_PORT:-${PORT:-8052}}"
 BAIHU_URL="http://localhost:${BAIHU_PORT}"
 
 # ===== [修改 1] 自动识别 Rclone 配置格式 =====
-mkdir -p ~/.config/rclone
-
-if [ -z "$RCLONE_CONF" ]; then
-    echo "❌ 错误：没有检测到 RCLONE_CONF"
-    exit 1
-fi
 
 if printf '%s' "$RCLONE_CONF" | grep -qE '^[[:space:]]*\['; then
-    # 原始多行配置
+    # 原始配置（支持多行）
     printf '%s\n' "$RCLONE_CONF" > ~/.config/rclone/rclone.conf
     echo "检测到原始 Rclone 配置"
 else
-    # Base64 单行配置
-    if ! printf '%s' "$RCLONE_CONF" | base64 -d > ~/.config/rclone/rclone.conf; then
-        echo "❌ 错误：Rclone Base64 配置解码失败"
-        exit 1
-    fi
+    # Base64 单行编码配置
+    printf '%s' "$RCLONE_CONF" | base64 -d > ~/.config/rclone/rclone.conf
     echo "检测到 Base64 Rclone 配置"
 fi
+
 # ===== [修改 1 结束] =====
 
 # 获取登陆cookie:需要设置用户名和密码
@@ -91,4 +83,3 @@ fi
 rm -f cookies.txt
 echo "🎉  同步 🔸  成功 🎉               文件已上传至 : $REMOTE_FOLDER/$latest_file"
 echo "🎉  Successful!  🎉"
-
