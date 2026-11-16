@@ -53,9 +53,20 @@ echo "$RESET_RESPONSE"
 
 echo  "======================写入rclone配置========================\n"
 
-# ===== [修改 2] Base64 解码 Rclone 配置 =====
+# ===== [修改 2] 自动识别 Rclone 配置格式 =====
+
 mkdir -p ~/.config/rclone
-printf '%s' "$RCLONE_CONF" | base64 -d > ~/.config/rclone/rclone.conf
+
+if printf '%s' "$RCLONE_CONF" | grep -qE '^[[:space:]]*\['; then
+    # 原始配置（支持多行）
+    printf '%s\n' "$RCLONE_CONF" > ~/.config/rclone/rclone.conf
+    echo "检测到原始 Rclone 配置"
+else
+    # Base64 单行编码配置
+    printf '%s' "$RCLONE_CONF" | base64 -d > ~/.config/rclone/rclone.conf
+    echo "检测到 Base64 Rclone 配置"
+fi
+
 # ===== [修改 2 结束] =====
 
 if [ -n "$RCLONE_CONF" ]; then
